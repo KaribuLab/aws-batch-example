@@ -1,0 +1,24 @@
+service: aws-serverless
+
+frameworkVersion: "2 || 3"
+
+provider:
+  name: aws
+  runtime: nodejs14.x
+  lambdaHashingVersion: 20201221
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - batch:SubmitJob
+      Resource:
+        - "${ssm:/batch-poc/aws-serverless/job-queue-arn}"
+        - "${ssm:/batch-poc/aws-serverless/job-definition-arn}"
+
+functions:
+  submitJob:
+    handler: handler.submitJob
+    events:
+      - schedule: cron(* * * ? * *)
+    environment:
+      JOB_DEFINITION_ARN: "${ssm:/batch-poc/aws-serverless/job-definition-arn}"
+      JOB_QUEUE_ARN: "${ssm:/batch-poc/aws-serverless/job-queue-arn}"
